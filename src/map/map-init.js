@@ -1,6 +1,12 @@
 import L from 'leaflet';
-import maplibregl from 'maplibre-gl';
+import mapboxgl from 'mapbox-gl';
 import { updateState } from '../core/state.js';
+
+const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
+mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+if (!MAPBOX_ACCESS_TOKEN) {
+	console.warn('VITE_MAPBOX_TOKEN is not set. Falling back to OpenFreeMap vector tiles for artistic mode.');
+}
 
 let map = null;
 let tileLayer = null;
@@ -52,7 +58,7 @@ export function initMap(containerId, initialCenter, initialZoom, initialTileUrl)
 }
 
 function initArtisticMap(containerId, center, zoom) {
-	artisticMap = new maplibregl.Map({
+	artisticMap = new mapboxgl.Map({
 		container: containerId,
 		style: { version: 8, sources: {}, layers: [] },
 		center: center,
@@ -103,7 +109,7 @@ export function updateArtisticStyle(theme) {
 	if (currentArtisticThemeName === theme.name) return;
 
 	currentArtisticThemeName = theme.name;
-	const style = generateMapLibreStyle(theme);
+	const style = generateArtisticStyle(theme);
 
 	if (styleChangeInProgress) {
 		pendingArtisticStyle = style;
@@ -121,12 +127,47 @@ export function updateArtisticStyle(theme) {
 	}
 }
 
-function generateMapLibreStyle(theme) {
+function generateArtisticStyle(theme) {
+	const hasMapboxToken = !!MAPBOX_ACCESS_TOKEN;
+	const sourceId = hasMapboxToken ? 'mapbox-streets' : 'openfreemap';
+	const sourceLayerRoad = hasMapboxToken ? 'road' : 'transportation';
+	const sourceLayerPark = hasMapboxToken ? 'landuse' : 'park';
+	const parkFilter = hasMapboxToken
+		? ['match', ['get', 'class'], ['park', 'pitch', 'grass', 'wood', 'scrub', 'cemetery', 'school'], true, false]
+		: true;
+	const roadFilterCommon = hasMapboxToken
+		? ['==', ['geometry-type'], 'LineString']
+		: true;
+
+	const motorwayClasses = hasMapboxToken
+		? ['motorway', 'trunk', 'motorway_link', 'trunk_link']
+		: ['motorway'];
+	const primaryClasses = hasMapboxToken
+		? ['primary', 'primary_link']
+		: ['primary'];
+	const secondaryClasses = hasMapboxToken
+		? ['secondary', 'secondary_link']
+		: ['secondary'];
+	const tertiaryClasses = hasMapboxToken
+		? ['tertiary', 'tertiary_link']
+		: ['tertiary'];
+	const residentialClasses = hasMapboxToken
+		? ['street', 'street_limited', 'service', 'track', 'residential']
+		: ['residential'];
+	const coveredRoadClasses = hasMapboxToken
+		? [...motorwayClasses, ...primaryClasses, ...secondaryClasses, ...tertiaryClasses, ...residentialClasses]
+		: ['motorway', 'primary', 'secondary', 'tertiary', 'residential'];
+
 	return {
 		version: 8,
-		names: theme.name,
+		name: theme.name,
 		sources: {
-			openfreemap: {
+			[sourceId]: hasMapboxToken
+				? {
+					type: 'vector',
+					url: 'mapbox://mapbox.mapbox-streets-v8'
+				}
+				: {
 				type: 'vector',
 				url: 'https://tiles.openfreemap.org/planet'
 			}
@@ -139,64 +180,65 @@ function generateMapLibreStyle(theme) {
 			},
 			{
 				id: 'water',
-				source: 'openfreemap',
+				source: sourceId,
 				'source-layer': 'water',
 				type: 'fill',
 				paint: { 'fill-color': theme.water }
 			},
 			{
 				id: 'park',
-				source: 'openfreemap',
-				'source-layer': 'park',
+				source: sourceId,
+				'source-layer': sourceLayerPark,
 				type: 'fill',
+				filter: parkFilter,
 				paint: { 'fill-color': theme.parks }
 			},
 			{
 				id: 'road-default',
-				source: 'openfreemap',
-				'source-layer': 'transportation',
+				source: sourceId,
+				'source-layer': sourceLayerRoad,
 				type: 'line',
-				filter: ['!', ['match', ['get', 'class'], ['motorway', 'primary', 'secondary', 'tertiary', 'residential'], true, false]],
+				filter: ['all', roadFilterCommon, ['!', ['match', ['get', 'class'], coveredRoadClasses, true, false]]],
 				paint: { 'line-color': theme.road_default, 'line-width': 0.5 }
 			},
 			{
 				id: 'road-residential',
-				source: 'openfreemap',
-				'source-layer': 'transportation',
+				source: sourceId,
+				'source-layer': sourceLayerRoad,
 				type: 'line',
-				filter: ['==', ['get', 'class'], 'residential'],
+				filter: ['all', roadFilterCommon, ['match', ['get', 'class'], residentialClasses, true, false]],
 				paint: { 'line-color': theme.road_residential, 'line-width': 0.5 }
 			},
 			{
 				id: 'road-tertiary',
-				source: 'openfreemap',
-				'source-layer': 'transportation',
+				source: sourceId,
+				'source-layer': sourceLayerRoad,
 				type: 'line',
-				filter: ['==', ['get', 'class'], 'tertiary'],
+				filter: ['all', roadFilterCommon, ['match', ['get', 'class'], tertiaryClasses, true, false]],
 				paint: { 'line-color': theme.road_tertiary, 'line-width': 0.8 }
 			},
 			{
 				id: 'road-secondary',
-				source: 'openfreemap',
-				'source-layer': 'transportation',
+				source: sourceId,
+				'source-layer': sourceLayerRoad,
 				type: 'line',
-				filter: ['==', ['get', 'class'], 'secondary'],
+				filter: ['all', roadFilterCommon, ['match', ['get', 'class'], secondaryClasses, true, false]],
 				paint: { 'line-color': theme.road_secondary, 'line-width': 1.0 }
 			},
 			{
 				id: 'road-primary',
-				source: 'openfreemap',
-				'source-layer': 'transportation',
+				source: sourceId,
+				'source-layer': sourceLayerRoad,
 				type: 'line',
-				filter: ['==', ['get', 'class'], 'primary'],
+				filter: ['all', roadFilterCommon, ['match', ['get', 'class'], primaryClasses, true, false]],
 				paint: { 'line-color': theme.road_primary, 'line-width': 1.5 }
 			},
 			{
 				id: 'road-motorway',
-				source: 'openfreemap',
-				'source-layer': 'transportation',
+				source: sourceId,
+				'source-layer': sourceLayerRoad,
 				type: 'line',
-				filter: ['==', ['get', 'class'], 'motorway'],
+				filter: ['all', roadFilterCommon, ['match', ['get', 'class'], motorwayClasses, true, false]],
 				paint: { 'line-color': theme.road_motorway, 'line-width': 2.0 }
 			}
 		]

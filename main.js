@@ -1,5 +1,7 @@
 import './style.css';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { subscribe, state, getSelectedTheme } from './src/core/state.js';
+import { titleFonts } from './src/core/title-fonts.js';
 import { initMap, updateMapTheme, invalidateMapSize, waitForTilesLoad, waitForArtisticIdle } from './src/map/map-init.js';
 import { setupControls, updatePreviewStyles } from './src/ui/form.js';
 import { exportToPNG } from './src/core/export.js';
@@ -112,10 +114,21 @@ async function ensurePreviewReady() {
 	}
 }
 
+async function waitForSelectedTitleFont() {
+	if (!document.fonts) return;
+	const selectedFont = titleFonts[state.titleFont] || titleFonts.gotham;
+	try {
+		await document.fonts.load(`700 64px "${selectedFont.family}"`);
+		await document.fonts.ready;
+	} catch (e) {
+	}
+}
+
 exportBtn.addEventListener('click', async () => {
-	const filename = `MapToPoster-${state.city.replace(/\s+/g, '-')}-${Date.now()}.png`;
+	const filename = `UnCommonCoreMapsMaker-${state.city.replace(/\s+/g, '-')}-${Date.now()}.png`;
 	setExportButtonLoading(true, 'processing');
 	try {
+		await waitForSelectedTitleFont();
 		await exportToPNG(posterContainer, filename, null);
 	} finally {
 		setExportButtonLoading(false);

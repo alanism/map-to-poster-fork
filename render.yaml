@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ucc-cartography-poster-a
+    runtime: static
+    plan: free
+    branch: main
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_MAPBOX_TOKEN
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

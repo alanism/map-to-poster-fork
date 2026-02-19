@@ -1,20 +1,20 @@
 <p align="center">
-  <img src="public/logo.webp" alt="MapToPoster JS Logo" width="200">
+  <img src="public/logo.webp" alt="UnCommon Core Maps Maker Logo" width="200">
 </p>
 
-# MapToPoster JS
+# UnCommon Core Maps Maker
 
-[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML) [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS) [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/) [![Leaflet](https://img.shields.io/badge/Leaflet-199903?style=for-the-badge&logo=Leaflet&logoColor=white)](https://leafletjs.com/) [![MapLibre](https://img.shields.io/badge/MapLibre-212121?style=for-the-badge&logo=maplibre&logoColor=white)](https://maplibre.org/) [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML) [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS) [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/) [![Leaflet](https://img.shields.io/badge/Leaflet-199903?style=for-the-badge&logo=Leaflet&logoColor=white)](https://leafletjs.com/) [![Mapbox GL](https://img.shields.io/badge/Mapbox_GL-000000?style=for-the-badge&logo=mapbox&logoColor=white)](https://www.mapbox.com/) [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
-MapToPoster JS is a client-side web application designed to generate high-resolution map posters. It allows users to search for any location in the world and transform it into a piece of art with customizable themes, layouts, and export formats.
+UnCommon Core Maps Maker is a client-side web application designed to generate high-resolution map posters. It allows users to search for any location in the world and transform it into a piece of art with customizable themes, layouts, and export formats.
 
-![MapToPoster JS Preview](public/screenshot.webp)
+![UnCommon Core Maps Maker Preview](public/screenshot.webp)
 
 ## 🚀 Key Features
 
 - **Dual Rendering Engine**: 
   - **Standard Mode**: Efficient tile-based mapping powered by Leaflet, supporting various base map styles (Minimal, Dark, Satellite, Voyager).
-  - **Artistic Mode**: Vector-based procedural themes powered by MapLibre GL, offering unique styles like Arctic Frost, Aurora Glow, Cyber Glitch, and more.
+  - **Artistic Mode**: Vector-based procedural themes powered by Mapbox GL JS, offering unique styles like Arctic Frost, Aurora Glow, Cyber Glitch, and more.
 - **Global Search**: Find any city or landmark worldwide via Nominatim API.
 - **Dynamic Composition**: 
   - Real-time perspective and zoom controls.
@@ -36,7 +36,7 @@ Based on high-quality raster tiles from established providers:
 - **Modern Voyager**: Colorful and detailed (CartoDB Voyager).
 - **Satellite View**: High-resolution imagery (Esri World Imagery).
 
-### Artistic Themes (MapLibre GL)
+### Artistic Themes (Mapbox GL JS)
 Hand-crafted vector styles with procedural colors:
 - **Arctic Frost**: Pale blues and crisp whites.
 - **Aurora Glow**: Iridescent greens and pinks.
@@ -69,7 +69,7 @@ The application will automatically pick up the new theme and display it in the s
 
 - **Framework**: Vanilla JavaScript (ES Modules)
 - **Bundler**: [Vite](https://vitejs.dev/)
-- **Mapping**: [Leaflet](https://leafletjs.com/) & [MapLibre GL](https://maplibre.org/)
+- **Mapping**: [Leaflet](https://leafletjs.com/) & [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Rendering**: [html2canvas](https://html2canvas.hertzen.com/)
 - **Typography**: Outfit, Playfair Display, Cormorant Garamond (Google Fonts)
@@ -96,13 +96,19 @@ Follow these steps to get a local copy up and running.
    npm install
    ```
 
-3. **Start development server**
+3. **Set Mapbox token**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Then set `VITE_MAPBOX_TOKEN` in `.env.local`.
+
+4. **Start development server**
    ```bash
    npm run dev
    ```
    The app will be available at `http://localhost:3000`.
 
-4. **Build for production**
+5. **Build for production**
    ```bash
    npm run build
    ```
@@ -111,7 +117,7 @@ Follow these steps to get a local copy up and running.
 ## 📜 Technical Overview
 
 1. **State Management**: A reactive state store in `src/core/state.js` synchronizes changes between the UI and both map engines.
-2. **Synchronized Viewports**: The Leaflet and MapLibre viewports are bidirectionally synced, ensuring consistency regardless of which interface is being manipulated.
+2. **Synchronized Viewports**: The Leaflet and Mapbox GL viewports are bidirectionally synced, ensuring consistency regardless of which interface is being manipulated.
 3. **Capture Logic**: High-fidelity exports are achieved by scaling the map containers to the target resolution before rendering with `html2canvas` or internal GL buffers.
 
 ## 📧 Contact

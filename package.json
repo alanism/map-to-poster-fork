@@ -10,7 +10,7 @@
 	"dependencies": {
 		"html2canvas": "^1.4.1",
 		"leaflet": "^1.9.4",
-		"maplibre-gl": "^5.18.0"
+		"mapbox-gl": "^3.18.1"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.4.24",
