@@ -22,5 +22,9 @@ export const outputPresets = {
 		{ name: 'Letter', width: 2550, height: 3300 },
 		{ name: 'Poster (18x24")', width: 5400, height: 7200 },
 		{ name: 'Poster (24x36")', width: 7200, height: 10800 },
+	],
+	other: [
+		{ name: 'Moleskine Standard single page', width: 1536, height: 2481 },
+		{ name: 'Moleskine Standard double page', width: 3072, height: 2481 },
 	]
 };
