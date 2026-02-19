@@ -1,0 +1,12 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '--build-arg'
+      - 'VITE_MAPBOX_TOKEN=${_VITE_MAPBOX_TOKEN}'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/ucc-cartography-poster-a'
+      - '.'
+
+images:
+  - 'gcr.io/$PROJECT_ID/ucc-cartography-poster-a'
