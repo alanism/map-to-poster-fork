@@ -113,6 +113,9 @@ UnCommon Core Maps Maker combines discovery, styling, composition, and export in
 2. **Artistic mode (Mapbox GL JS):**
    - Use vector source and generated custom styles.
    - Support multiple predefined artistic palettes.
+   - Derive style layers from theme tokens (`bg`, `water`, `parks`, `road_*`).
+   - Use Mapbox Streets vector tiles when `VITE_MAPBOX_TOKEN` is set.
+   - Fall back to OpenFreeMap vector tiles when token is not configured.
 
 ### 7.3 Theme and Styling Controls
 
@@ -200,9 +203,35 @@ UnCommon Core Maps Maker combines discovery, styling, composition, and export in
 
 ### 9.3 Deployment
 
-1. Static build output via Vite.
-2. Docker multi-stage build.
-3. Nginx serves compiled SPA assets with `index.html` fallback routing.
+1. Static build output via Vite (`dist/`).
+2. Render Blueprint deployment via `render.yaml`:
+   - Static service runtime.
+   - Build command `npm ci && npm run build`.
+   - Publish path `./dist`.
+   - SPA route rewrite `/* -> /index.html`.
+3. Docker multi-stage build via `Dockerfile`.
+4. Nginx serves compiled SPA assets with `index.html` fallback routing (`nginx.conf`).
+5. Optional container image build pipeline via `cloudbuild.yaml`.
+
+### 9.4 Artistic Styling Code Map
+
+1. `src/core/artistic-themes.js`:
+   - Source of truth for artistic palette tokens.
+   - Defines theme names, descriptions, and per-layer colors.
+2. `src/map/map-init.js`:
+   - `generateArtisticStyle(theme)` converts theme tokens into Mapbox GL style JSON.
+   - `updateArtisticStyle(theme)` applies style changes with pending-style handling.
+   - Artistic/standard map viewport synchronization logic.
+3. `src/ui/form.js`:
+   - Populates artistic theme selector.
+   - Handles mode switching (tile vs artistic).
+   - Triggers style re-application when artistic theme changes.
+4. `src/core/state.js`:
+   - Persists `renderMode` and `artisticTheme`.
+   - Resolves active artistic theme via `getSelectedArtisticTheme()`.
+5. `src/core/export.js`:
+   - Captures artistic map canvas for export path.
+   - Applies active artistic theme colors for poster background/text in export clone.
 
 ---
 

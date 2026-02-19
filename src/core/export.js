@@ -1,10 +1,16 @@
 import html2canvas from 'html2canvas';
-import { getMapInstance, getArtisticMapInstance } from '../map/map-init.js';
+import { getArtisticMapInstance, waitForArtisticIdle } from '../map/map-init.js';
 import { state, getSelectedTheme, getSelectedArtisticTheme } from './state.js';
 import { hexToRgba } from './utils.js';
 
+const MAX_EXPORT_PIXELS = 120_000_000;
+
+function toFinitePx(value) {
+	const parsed = Number.parseFloat(value);
+	return Number.isFinite(parsed) ? parsed : 0;
+}
+
 async function captureMapSnapshot() {
-	const artisticContainer = document.getElementById('artistic-map');
 	const mapPreviewContainer = document.getElementById('map-preview');
 	const posterContainer = document.getElementById('poster-container');
 
@@ -19,32 +25,17 @@ async function captureMapSnapshot() {
 
 	if (isArtistic) {
 		const artisticMap = getArtisticMapInstance();
-		if (artisticMap && artisticContainer) {
+		if (artisticMap) {
 			try {
-				const originalWidth = artisticContainer.style.width;
-				const originalHeight = artisticContainer.style.height;
-
-				artisticContainer.style.width = `${state.width}px`;
-				artisticContainer.style.height = `${state.height}px`;
-				artisticMap.resize();
-
-				await new Promise(resolve => {
-					const timer = setTimeout(resolve, 1500);
-					artisticMap.once('idle', () => {
-						clearTimeout(timer);
-						resolve();
-					});
-				});
+				await waitForArtisticIdle(8000);
+				await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
 				const mapCanvas = artisticMap.getCanvas();
+				if (!mapCanvas || mapCanvas.width === 0 || mapCanvas.height === 0) {
+					return null;
+				}
 				ctx.drawImage(mapCanvas, 0, 0, canvas.width, canvas.height);
-				const data = canvas.toDataURL('image/png');
-
-				artisticContainer.style.width = originalWidth;
-				artisticContainer.style.height = originalHeight;
-				artisticMap.resize();
-
-				return data;
+				return canvas.toDataURL('image/png');
 			} catch (e) {
 				console.error('Gagal capture Artistic Map:', e);
 			}
@@ -54,17 +45,17 @@ async function captureMapSnapshot() {
 			const tiles = Array.from(mapPreviewContainer.querySelectorAll('.leaflet-tile'));
 
 			const containerRect = mapPreviewContainer.getBoundingClientRect();
-
-			const scaleFactor = state.width / containerRect.width;
+			const scaleX = state.width / containerRect.width;
+			const scaleY = state.height / containerRect.height;
 
 			tiles.forEach(tile => {
 				if (tile.complete && tile.naturalWidth > 0) {
 					const tileRect = tile.getBoundingClientRect();
 
-					const x = (tileRect.left - containerRect.left) * scaleFactor;
-					const y = (tileRect.top - containerRect.top) * scaleFactor;
-					const w = tileRect.width * scaleFactor;
-					const h = tileRect.height * scaleFactor;
+					const x = (tileRect.left - containerRect.left) * scaleX;
+					const y = (tileRect.top - containerRect.top) * scaleY;
+					const w = tileRect.width * scaleX;
+					const h = tileRect.height * scaleY;
 
 					ctx.drawImage(tile, x, y, w, h);
 				}
@@ -88,12 +79,14 @@ export async function exportToPNG(element, filename, statusElement, options = {}
 		const snapshot = await captureMapSnapshot();
 		const targetWidth = state.width;
 		const targetHeight = state.height;
+		if ((targetWidth * targetHeight) > MAX_EXPORT_PIXELS) {
+			throw new Error(`Requested export is too large (${targetWidth}x${targetHeight}).`);
+		}
 
 		if (document.fonts && document.fonts.ready) {
 			try { await document.fonts.ready; } catch (e) { }
 		}
 
-		const posterScalerEl = document.getElementById('poster-scaler');
 		const posterContainerEl = document.getElementById('poster-container');
 		const logicalContainerWidth = posterContainerEl ? (posterContainerEl.offsetWidth || targetWidth) : targetWidth;
 		const logicalContainerHeight = posterContainerEl ? (posterContainerEl.offsetHeight || targetHeight) : targetHeight;
@@ -254,9 +247,9 @@ export async function exportToPNG(element, filename, statusElement, options = {}
 
 					if (dividerOffset && city) {
 						if (dividerOffset > 0) {
-							city.style.marginBottom = (parseFloat(city.style.marginBottom || '0') + dividerOffset) + 'px';
+							city.style.marginBottom = `${toFinitePx(city.style.marginBottom) + dividerOffset}px`;
 						} else {
-							clonedDivider.style.marginTop = (parseFloat(clonedDivider.style.marginTop || '0') + dividerOffset) + 'px';
+							clonedDivider.style.marginTop = `${toFinitePx(clonedDivider.style.marginTop) + dividerOffset}px`;
 						}
 					}
 				}

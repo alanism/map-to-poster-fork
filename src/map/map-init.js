@@ -83,6 +83,11 @@ function initArtisticMap(containerId, center, zoom) {
 			styleChangeInProgress = false;
 		}
 	});
+	artisticMap.on('error', (e) => {
+		const err = e?.error || e;
+		const msg = err?.message || String(err || 'Unknown Mapbox error');
+		console.error('[ArtisticMap] Mapbox error:', msg, err);
+	});
 	artisticMap.on('moveend', () => {
 		if (isSyncing) return;
 		isSyncing = true;
@@ -165,7 +170,11 @@ function generateArtisticStyle(theme) {
 			[sourceId]: hasMapboxToken
 				? {
 					type: 'vector',
-					url: 'mapbox://mapbox.mapbox-streets-v8'
+					tiles: [
+						`https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/{z}/{x}/{y}.vector.pbf?access_token=${MAPBOX_ACCESS_TOKEN}`
+					],
+					minzoom: 0,
+					maxzoom: 14
 				}
 				: {
 				type: 'vector',

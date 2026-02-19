@@ -2,8 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+	font-family: 'UCCTitleArcher';
+	src: url('./Fonts/ArcherLightPro.otf') format('opentype');
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'UCCTitleGotham';
+	src: url('./Fonts/Gotham.otf') format('opentype');
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'UCCTitleKnockout';
+	src: url('./Fonts/Knockout HTF34-JuniorSumo Regular.otf') format('opentype');
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'UCCTitleNeutraText';
+	src: url('./Fonts/NeutraTextTF-Demi.otf') format('opentype');
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'UCCTitleTungsten';
+	src: url('./Fonts/Tungsten-Bold.otf') format('opentype');
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'UCCTitleSurveyor';
+	src: url('./Fonts/surveyor-display-bold.otf') format('opentype');
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+}
+
 :root {
-	--accent-color-rgb: 15, 23, 42;
+	--cyan: #4EABBC;
+	--orange: #E9604F;
+	--swiss-red: #E10600;
+	--ink: #111827;
+	--paper: #FFFFFF;
+	--ghost-gray: #F9FAFB;
+	--accent-color-rgb: 78, 171, 188;
 }
 
 .bg-accent {
@@ -41,12 +95,63 @@
 
 @layer base {
 	body {
-		@apply bg-slate-50 text-slate-900 antialiased;
+		@apply bg-white text-slate-900 antialiased;
+		font-family: 'DM Sans', sans-serif;
 		font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 	}
 }
 
 @layer components {
+	.ucc-title {
+		font-family: 'Permanent Marker', cursive;
+		text-transform: uppercase;
+		letter-spacing: -0.02em;
+		color: var(--ink);
+	}
+
+	.ucc-subheader {
+		@apply text-[11px] font-black uppercase tracking-[0.2em] text-slate-900;
+	}
+
+	.ucc-label {
+		@apply text-[10px] font-black uppercase tracking-[0.2em] text-slate-400;
+	}
+
+	.ucc-card {
+		background: rgba(255, 255, 255, 0.85);
+		backdrop-filter: blur(12px);
+		border-radius: 12px;
+		border: 1px solid rgba(17, 24, 39, 0.08);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+		transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.ucc-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+	}
+
+	.ucc-card-accent-cyan {
+		border-left: 5px solid var(--cyan);
+	}
+
+	.ucc-card-accent-orange {
+		border-left: 5px solid var(--orange);
+	}
+
+	.ucc-step-badge {
+		@apply w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black;
+		background: var(--ghost-gray);
+		color: #6B7280;
+	}
+
+	.ucc-button {
+		font-family: 'DM Sans', sans-serif;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+	}
+
 	.glass-card {
 		@apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
 	}
@@ -60,7 +165,9 @@
 	}
 
 	.input-field {
-		@apply w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all;
+		@apply w-full border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 transition-all;
+		background: var(--ghost-gray);
+		border-color: rgba(17, 24, 39, 0.12);
 	}
 
 	.input-field:focus {
@@ -68,7 +175,7 @@
 	}
 
 	.label-sm {
-		@apply text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5 block px-1;
+		@apply text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1.5 block px-1;
 	}
 
 	input[type="range"]::-webkit-slider-thumb {
@@ -90,6 +197,15 @@
 	::-webkit-scrollbar-thumb {
 		@apply bg-slate-200 rounded-full hover:bg-slate-300;
 	}
+}
+
+.map-grid-bg {
+	background-color: var(--paper);
+	background-image:
+		radial-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+		radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+	background-size: 16px 16px, 8px 8px;
+	background-position: 1px 1px, 1px 1px;
 }
 
 .leaflet-container {
@@ -114,6 +230,22 @@
 .no-scrollbar {
 	-ms-overflow-style: none;
 	scrollbar-width: none;
+}
+
+/* Keep Mapbox artistic canvas pinned to poster bounds.
+   mapbox-gl.css sets .mapboxgl-map to position: relative, which
+   overrides Tailwind's .absolute and collapses this layer height. */
+#artistic-map.mapboxgl-map {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#artistic-map .mapboxgl-canvas-container,
+#artistic-map .mapboxgl-canvas {
+	width: 100% !important;
+	height: 100% !important;
 }
 
 #mode-tile.active,

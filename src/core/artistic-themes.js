@@ -71,7 +71,7 @@ export const artisticThemes = {
 	},
 	dark_gold: {
 		name: "Dark Gold",
-		description: "Mewah — latar gelap dengan aksen emas hangat",
+		description: "Luxury dark canvas with warm gold accents",
 		bg: "#0B0A09",
 		text: "#F6E7C1",
 		water: "#061022",
@@ -172,7 +172,6 @@ export const artisticThemes = {
 		description: "Dark background with vibrant neon stripe palette",
 		bg: "#0B0B16",
 		text: "#00E5E5",
-		gradient_color: "#0B0B16",
 		water: "#071020",
 		parks: "#111122",
 		road_motorway: "#FF2AE6",

@@ -6,14 +6,15 @@ let observers = [];
 const STORAGE_KEY = 'map-to-poster:settings';
 
 export const state = {
-	city: "JAKARTA",
+	city: "Bay Area",
 	cityOverride: "",
-	lat: -6.2088,
-	lon: 106.8456,
+	lat: 37.5719,
+	lon: -122.0463,
+	titleFont: 'gotham',
 	zoom: 12,
 	theme: "minimal",
 	width: 1080,
-	height: 1080,
+	height: 1920,
 	isExporting: false,
 	overlayBgType: 'vignette',
 	overlaySize: 'medium',
@@ -27,6 +28,7 @@ const SAVED_KEYS = [
 	'cityOverride',
 	'lat',
 	'lon',
+	'titleFont',
 	'zoom',
 	'theme',
 	'width',

@@ -2,6 +2,7 @@ import { state, updateState, getSelectedTheme, getSelectedArtisticTheme } from '
 import { hexToRgba } from '../core/utils.js';
 import { artisticThemes } from '../core/artistic-themes.js';
 import { themes } from '../core/themes.js';
+import { titleFonts } from '../core/title-fonts.js';
 import { outputPresets } from '../core/output-presets.js';
 import { updateMapPosition, invalidateMapSize, updateArtisticStyle, updateMapTheme } from '../map/map-init.js';
 import { searchLocation, formatCoords } from '../map/geocoder.js';
@@ -25,6 +26,12 @@ export function setupControls() {
 
 	const themeSelect = document.getElementById('theme-select');
 	const artisticThemeSelect = document.getElementById('artistic-theme-select');
+	const titleFontSelect = document.getElementById('title-font-select');
+	const typographyTabSelect = document.getElementById('typography-tab-select');
+	const typographyTabDownload = document.getElementById('typography-tab-download');
+	const typographyPaneSelect = document.getElementById('typography-pane-select');
+	const typographyPaneDownload = document.getElementById('typography-pane-download');
+	const fontDownloadLinks = document.getElementById('font-download-links');
 	const artisticDesc = document.getElementById('artistic-desc');
 
 	if (artisticThemeSelect) {
@@ -44,8 +51,48 @@ export function setupControls() {
 				const t = themes[key];
 				return `<option value="${key}">${t.name || key}</option>`;
 			})
+				.join('\n');
+	}
+
+	if (titleFontSelect) {
+		titleFontSelect.innerHTML = Object.entries(titleFonts)
+			.map(([key, font]) => `<option value="${key}">${font.name}</option>`)
 			.join('\n');
 	}
+
+	if (fontDownloadLinks) {
+		fontDownloadLinks.innerHTML = Object.values(titleFonts)
+			.map(font => `
+				<a href="${font.downloadUrl}" target="_blank" rel="noopener noreferrer"
+					class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-bold text-slate-700 hover:border-accent hover:text-accent transition-colors">
+					<span>${font.name}</span>
+					<span class="text-[9px] uppercase tracking-wider text-slate-400">Right click + save as</span>
+				</a>
+			`)
+			.join('\n');
+	}
+
+	function setTypographyTab(tab) {
+		if (!typographyTabSelect || !typographyTabDownload || !typographyPaneSelect || !typographyPaneDownload) return;
+
+		const isSelect = tab === 'select';
+		typographyPaneSelect.classList.toggle('hidden', !isSelect);
+		typographyPaneDownload.classList.toggle('hidden', isSelect);
+
+		typographyTabSelect.classList.toggle('bg-white', isSelect);
+		typographyTabSelect.classList.toggle('text-slate-900', isSelect);
+		typographyTabSelect.classList.toggle('shadow-sm', isSelect);
+		typographyTabSelect.classList.toggle('text-slate-500', !isSelect);
+
+		typographyTabDownload.classList.toggle('bg-white', !isSelect);
+		typographyTabDownload.classList.toggle('text-slate-900', !isSelect);
+		typographyTabDownload.classList.toggle('shadow-sm', !isSelect);
+		typographyTabDownload.classList.toggle('text-slate-500', isSelect);
+	}
+
+	typographyTabSelect?.addEventListener('click', () => setTypographyTab('select'));
+	typographyTabDownload?.addEventListener('click', () => setTypographyTab('download'));
+	setTypographyTab('select');
 
 	const labelsToggle = document.getElementById('show-labels-toggle');
 	const overlayBgButtons = document.querySelectorAll('.overlay-bg-btn');
@@ -269,6 +316,12 @@ export function setupControls() {
 		themeSelect.addEventListener('input', onThemeInput);
 	}
 
+	if (titleFontSelect) {
+		titleFontSelect.addEventListener('change', (e) => {
+			updateState({ titleFont: e.target.value });
+		});
+	}
+
 	artisticThemeSelect.addEventListener('change', (e) => {
 		updateState({ artisticTheme: e.target.value });
 		if (state.renderMode === 'artistic') {
@@ -344,8 +397,9 @@ export function setupControls() {
 			if (labelsControl) labelsControl.classList.add('hidden');
 		}
 
-		themeSelect.value = currentState.theme;
-		artisticThemeSelect.value = currentState.artisticTheme;
+			themeSelect.value = currentState.theme;
+			artisticThemeSelect.value = currentState.artisticTheme;
+			if (titleFontSelect) titleFontSelect.value = currentState.titleFont || 'gotham';
 
 		const artisticTheme = getSelectedArtisticTheme();
 		artisticDesc.textContent = artisticTheme.description;
@@ -451,6 +505,7 @@ export function updatePreviewStyles(currentState) {
 	const artisticMapDiv = document.getElementById('artistic-map');
 
 	const activeTheme = isArtistic ? artisticTheme : theme;
+	const selectedTitleFont = titleFonts[currentState.titleFont] || titleFonts.gotham;
 
 	if (isArtistic) {
 		mapPreview.style.visibility = 'hidden';
@@ -486,6 +541,7 @@ export function updatePreviewStyles(currentState) {
 	posterScaler.style.transform = `scale(${scale})`;
 
 	displayCity.textContent = (currentState.cityOverride && currentState.cityOverride.length) ? currentState.cityOverride : currentState.city;
+	displayCity.style.fontFamily = `${selectedTitleFont.family}, ${selectedTitleFont.fallback}`;
 	displayCity.style.color = activeTheme.text || activeTheme.textColor;
 	displayCoords.textContent = formatCoords(currentState.lat, currentState.lon);
 	displayCoords.style.color = activeTheme.text || activeTheme.textColor;
